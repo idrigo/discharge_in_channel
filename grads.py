@@ -14,11 +14,12 @@ u = os.path.join(config.model_path, 'u.nc')
 v = os.path.join(config.model_path, 'v.nc')
 
 if not (os.path.isfile(u) and os.path.isfile(v)):
-    print('Cоздание netcdf массивов')
+    print('netCDF files not found. Trying to create....')
     dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(config.model_path)
     subprocess.call(['grads', '-bpcx', 'grads-netcdf.gs'])
     os.chdir(dir)
+    print('netCDF files created')
 
 uu = Dataset(u, mode='r')
 vv = Dataset(v, mode='r')

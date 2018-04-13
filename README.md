@@ -10,7 +10,7 @@
    - UNIX: `source activate ocean`
 5. Устанавливаем необходимые зависимости 
    1. `conda install pip`
-   2. `pip install numpy pandas matplotlib geopy netcdf4`
+   2. `pip install numpy scipy pandas matplotlib geopy netcdf4`
 6. Устанавливаем GRADS для работы с файлами модели. Скачать можно с [SourceForge](https://sourceforge.net/projects/opengrads/), почитать про  пакет на [официальной странице](http://cola.gmu.edu/grads/)
 
 ## Использование

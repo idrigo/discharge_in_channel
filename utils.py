@@ -99,15 +99,14 @@ def interpolate_to_section(x, y, z, start, end, n_points):
     Поле задается в виде переменных x,y,z; где все эти переменные - списки одинаковой длины
     (например широта, долгота, глубина)
     """
-    print 'Интерполяция рельефа на разрез...'
+    print 'Interpolating relief to section...'
     raz_lat = np.linspace(start[0], end[0], n_points)  # создаем координаты широты и долготы на разрезе
     raz_lon = np.linspace(start[1], end[1], n_points)
     razrez_cords = np.column_stack((raz_lat, raz_lon))  # np массив широты и долготы точек разреза
 
     # интерполируем значения из сетки на линию и объединяем в один массив
-    # method = 'cubic'
     # method = 'nearest'
-    method = 'cubic'
+    method = 'linear'
 
     from scipy.interpolate import griddata
 
@@ -133,7 +132,7 @@ def interpolate_to_section(x, y, z, start, end, n_points):
     df['Dist_Abs'] = dist_abs
     if df['Depth'].mean() < 0:
         df['Depth'] = abs(df['Depth'])
-    print 'Интерполяция рельефа на разрез завершена'
+    print 'Interpolation of relief to section done'
     return df
 
 
@@ -144,16 +143,16 @@ def value_idx(df, colname, input_):
 
 
 def print_to_console(Q_cut, Q_plus, Q_minus):
-    print 'Суммарный расход в слое ниже {0} м равен {1} м^3/c или {2} Св'.format(config.z_value,
+    print 'Summary discharge below {0} m is {1} m^3/s or {2} Sv'.format(config.z_value,
                                                                                  round(Q_cut, 1),
                                                                                  round(Q_cut / 1e6, 5))
 
-    print 'Расход для положительной компоненты в слое ниже {0} м равен {1} м^3/c или {2} Св'.format(config.z_value,
+    print 'Positive discharge below {0} m is {1} m^3/s or {2} Sv'.format(config.z_value,
                                                                                                     round(Q_plus, 1),
                                                                                                     round(Q_plus / 1e6,
                                                                                                           5))
 
-    print 'Расход для отрицательной компоненты в слое ниже {0} м равен {1} м^3/c или {2} Св'.format(config.z_value,
+    print 'Negative discharge below {0} m is {1} m^3/s or {2} Sv'.format(config.z_value,
                                                                                                     round(Q_minus, 1),
                                                                                                     round(Q_minus / 1e6,
                                                                                                           5))

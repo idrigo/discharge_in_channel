@@ -3,16 +3,17 @@
 import pandas as pd
 import numpy as np
 from geopy.distance import vincenty
+import sys
 
 import config
 import utils
 import grads
 import plotting
 
-np.warnings.filterwarnings("ignore", category =RuntimeWarning)  # игнорирование некритичных ошибок numpy
+np.warnings.filterwarnings("ignore", category=RuntimeWarning)  # игнорирование некритичных ошибок numpy
 
 # -----------------ТЕЧЕНИЯ-------------------
-print 'Создание датафрейма течений...'
+print 'Creation of currents dataframe...'
 if config.data_type == 'model':  # если используем модельные данные, то переходим в функию pygrads
     if not config.shirotny:
         df_cc = grads.select_netcdf('u',
@@ -41,11 +42,11 @@ else:
     df_c['Lon'] = -(abs(df_c['Lon']))  # меняем координаты
     df_cc = utils.dist_calc(df_c)  # рассчитываем растояние по разрезу, основываясь на координатах станций
 
-print 'Создание датафрейма течений завершено'
+print 'Creation of currents dataframe done'
 
 # -------------------------РЕЛЬЕФ---------------------------------
 # #делаем датафрейм рельефа
-print 'Считывание файла рельефа...'
+print 'Reading relief file...'
 
 try:
     # смотрим, заданы ли границы разреза
@@ -74,9 +75,11 @@ else:  # если используется двумерный рельеф
                                              start,
                                              end,
                                              config.r_points)
+    if df_relief['Depth'].hasnans:
+        sys.exit('*****ERROR******\nProbably, defined section is out of relief file boundaries')
+df_r = utils.dist_calc(df_relief) # рассчитываем растояние по разрезу, основываясь на координатах станций
 
-df_r = utils.dist_calc(df_relief)  # рассчитываем растояние по разрезу, основываясь на координатах станций
-print 'Создание датафрейма рельефа завершено'
+print 'Creation of relief dataframe done'
 
 if config.shirotny:  # если считаем широтный разрез
     x_coord = 'Lon'
@@ -93,11 +96,11 @@ def grid(x_list, y_list, v_nodes):
     :param v_nodes: количество узлов по вертикали
     :return: координаты по x и y, двумерную сетку координат для построения графиков
     """
-    print 'Создание сетки рельефа...'
+    print 'Creation of relief grid...'
     xi = x_list
     yi = np.linspace(0, max(y_list), v_nodes)
     xx, yy = np.meshgrid(xi, yi)
-    print 'Создание сетки рельефа завершено'
+    print 'Creation of relief grid done'
     return xi, yi, xx, yy
 
 
@@ -108,7 +111,7 @@ def interpolate(x, y, z, v_nodes, df_r, method):
     df_r - датафрейм рельефа, на основании которого будет проводиться интерполяция
     v_nodes - разрешение по вертикали
     """
-    print 'Интерполяция разреза скоростей...'
+    print 'Interpolating currents to section'
     xi, yi, xx, yy = grid(df_r[x_coord].values,
                           df_r['Depth'].values,
                           v_nodes)
@@ -128,7 +131,7 @@ def interpolate(x, y, z, v_nodes, df_r, method):
     zi1[~np.isnan(zi)] = 0  # зануляем внешлюю сетку, там где внутренняя сетка НЕ равна nan
     zz = np.nansum(np.dstack((zi, zi1)), 2) # складываем две сетки, получаем комбинировнанное поле
 
-    print 'Интерполяция разреза скоростей завершена'
+    print 'Interpolation currents to section done'
     return zz
 
 
@@ -152,7 +155,7 @@ def cut_array(bottom_list,
               array,
               depth_step,
               top):
-    print 'Обрезка разреза скоростей по рельефу...'
+
     '''
     обрезает 2-мерный массив снизу по списку значений, например глубины.
     длина списка должна быть равна колчеству колонок в массиве
@@ -168,7 +171,6 @@ def cut_array(bottom_list,
         cut_bottom = int(bottom_list[i] / depth_step)
         # "обрезаем" то количество узлов, которое равно глубине в данной точке, деленное на шаг сетки
         a[:, i][cut_bottom:] = np.nan
-    print 'Обрезка разреза скоростей по рельефу завершена'
     return a
 
 
@@ -210,5 +212,7 @@ utils.results_out(df_cc,
                   Q_cut,
                   Q_plus,
                   Q_minus)
+
+print('************DONE**************')
 
 #utils.grid_to_df(zz_cut, xi, yi, save=True)
